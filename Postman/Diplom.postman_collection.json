@@ -1,0 +1,1669 @@
+{
+	"info": {
+		"_postman_id": "ebe806a1-d234-4849-8fe9-ba4a1ebaf4a4",
+		"name": "Diplom",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "19266868"
+	},
+	"item": [
+		{
+			"name": "Todoist",
+			"item": [
+				{
+					"name": "Проект",
+					"item": [
+						{
+							"name": "Получить список всех проектов",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Получение стандартного проекта \\\"Inbox\\\"\", () => {\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(200);\r",
+											"\r",
+											"    // ищем стандартный проект с названием \"Inbox\"\r",
+											"    const inbox = pm.response.json().find(item => item.name === \"Inbox\");\r",
+											"    \r",
+											"    // проверяем наличие объекта проекта \"Inbox\"\r",
+											"    pm.expect(inbox, \"Не найден стандартный проект \\\"Inbox\\\"\").to.not.be.undefined;\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/projects",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"projects"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Получить проект по id",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const\r",
+											"    // получаем путь url\r",
+											"    path = pm.request.url.path,\r",
+											"    // получаем id из адреса\r",
+											"    request_project_id = path[path.length - 1],\r",
+											"    // проверяем: если это число - ставим как есть, иначе это переменная окружения - подставляем из значение\r",
+											"    project_id = typeof request_project_id === 'Number' ?\r",
+											"        request_project_id : pm.environment.replaceIn(request_project_id);\r",
+											"\r",
+											"// сохраняем id проекта в запросе\r",
+											"pm.collectionVariables.set('project_id', project_id);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Получение проекта по id\", () => {\r",
+											"    const response = pm.response;\r",
+											"\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(response.code, \"Ошибка выполенния запроса\").to.be.equal(200);\r",
+											"\r",
+											"    // проверяем правильность полученного проекта\r",
+											"    pm.expect(response.json().id, \"Запрос вернул неверный проект. Не соответствует id\")\r",
+											"        .to.equal(+pm.collectionVariables.get('project_id'));\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/projects/{{base_project_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"projects",
+										"{{base_project_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Получить список сотруднков по id проекта",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Получение списка сотрудников\", () => {\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(200);\r",
+											"\r",
+											"    // проверяем возвращенное значение\r",
+											"    pm.expect(pm.response.json().length, \"Запрос вернул пустой ответ\").to.not.equal(0);\r",
+											"\r",
+											"    const ids = [];\r",
+											"    // записываем id полученных элементов\r",
+											"    pm.response.json().forEach(item => ids.push(item.id));\r",
+											"    \r",
+											"    // проверяем правильность полученного проекта\r",
+											"    pm.expect(pm.collectionVariables.get('project_id'), \"Запрос вернул сотрудников к другому проекту. Не соответствует id\")\r",
+											"        .to.equals(ids);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const\r",
+											"    // получаем project_id из запроса\r",
+											"    request_project_id = pm.request.url.path[1],\r",
+											"    // проверяем: если это число - ставим как есть, иначе это переменная окружения - подставляем из значение\r",
+											"    project_id = typeof request_project_id === 'Number' ?\r",
+											"        request_project_id : pm.environment.replaceIn(request_project_id);\r",
+											"\r",
+											"// сохраняем id проекта в запросе\r",
+											"pm.collectionVariables.set('project_id', project_id);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/projects/{{base_project_id}}/collaborators",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"projects",
+										"{{base_project_id}}",
+										"collaborators"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Создать новый проект",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// сохраняем последний добавленный id\r",
+											"pm.environment.set(\"last_project_id\", pm.response.json().id);\r",
+											"\r",
+											"// тест\r",
+											"pm.test(\"Создание нового проекта\", () => {\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(200);\r",
+											"\r",
+											"    // проверяем возвращенное значение\r",
+											"    pm.expect(pm.response.json().length, \"Запрос вернул пустой ответ\").to.not.equal(0);\r",
+											"\r",
+											"    const item = pm.response.json();\r",
+											"    // проверяем правильность полученного проекта\r",
+											"    pm.expect(item.name, \"Ошибка при создании проекта. Не соответствует название\")\r",
+											"        .to.equal(pm.collectionVariables.get('project_name'));\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// достаем тело запроса\r",
+											"const body = JSON.parse(pm.request.body.raw);\r",
+											"\r",
+											"// записываем в переменную значение поля\r",
+											"pm.collectionVariables.set('project_name', body.name);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"Дипломная для теста\",\r\n    \"color\": 32\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/projects",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"projects"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Обновить проект по id",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const\r",
+											"    // получаем путь url\r",
+											"    path = pm.request.url.path,\r",
+											"    // получаем id из адреса\r",
+											"    request_project_id = path[path.length - 1],\r",
+											"    // проверяем: если это число - ставим как есть, иначе это переменная окружения - подставляем из значение\r",
+											"    project_id = typeof request_project_id === 'Number' ?\r",
+											"        request_project_id : pm.environment.replaceIn(request_project_id);\r",
+											"\r",
+											"// сохраняем id проекта в запросе\r",
+											"pm.collectionVariables.set('project_id', project_id);\r",
+											"\r",
+											"// достаем тело запроса\r",
+											"const body = JSON.parse(pm.request.body.raw);\r",
+											"// записываем в переменную значение поля\r",
+											"pm.collectionVariables.set('project_favorite', body.favorite);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Обновление проекта\", () => {\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(204);\r",
+											"\r",
+											"    // выполняем запрос на проверку изменений\r",
+											"    pm.sendRequest({\r",
+											"        url: `${pm.environment.get(\"base_url\")}/projects/${pm.collectionVariables.get(\"project_id\")}`,\r",
+											"        method: 'GET',\r",
+											"        header: {\r",
+											"            'authorization': pm.request.getHeaders().Authorization\r",
+											"        }\r",
+											"    }, (err, response) => {\r",
+											"        pm.test(\"Проверка обновления проекта\", () => {\r",
+											"            // проверяем \r",
+											"            pm.expect(response.json().favorite, \"Значение не изменилось\").to.eql(false);\r",
+											"        });\r",
+											"    });\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"favorite\": \"false\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/projects/{{last_project_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"projects",
+										"{{last_project_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Удалить проект по id",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const\r",
+											"    // получаем путь url\r",
+											"    path = pm.request.url.path,\r",
+											"    // получаем id из адреса\r",
+											"    request_project_id = path[path.length - 1],\r",
+											"    // проверяем: если это число - ставим как есть, иначе это переменная окружения - подставляем из значение\r",
+											"    project_id = typeof request_project_id === 'Number' ?\r",
+											"        request_project_id : pm.environment.replaceIn(request_project_id);\r",
+											"\r",
+											"// сохраняем id проекта в запросе\r",
+											"pm.collectionVariables.set('project_id', project_id);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Удаление проекта\", () => {\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(204);\r",
+											"\r",
+											"    // выполняем запрос на проверку изменений\r",
+											"    pm.sendRequest({\r",
+											"        url: `${pm.environment.get(\"base_url\")}/projects/${pm.collectionVariables.get(\"project_id\")}`,\r",
+											"        method: 'GET',\r",
+											"        header: {\r",
+											"            'authorization': pm.request.getHeaders().Authorization\r",
+											"        }\r",
+											"    }, (err, response) => {\r",
+											"        pm.test(\"Проверка удаления проекта\", () => {\r",
+											"            // выводит ошибку, т.к. скорее всего удаленные проекты помещаются в корзину и они доступны по прямым ссылкам\r",
+											"            //pm.expect(response.json(), \"Проект не удалился\").to.be.undefined;\r",
+											"            // проверяем удаление, не удаляет т.к. возможно проекты переносятся в корзину из которой затем автоматически удаляются сами\r",
+											"            pm.expect(response.code, \"Задача не удалилась\").to.be.equal(404);\r",
+											"        });\r",
+											"    });\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/projects/{{last_project_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"projects",
+										"{{last_project_id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Задача",
+					"item": [
+						{
+							"name": "Получить список всех активных задач",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Получение списка активных задач\", () => {\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(200);\r",
+											"\r",
+											"    // ищем стандартный проект с названием\r",
+											"    const inbox = pm.response.json().find(item => item.content === \"1. Тестирование авторизации в Selenium'e\");\r",
+											"    // проверяем наличие объекта проекта \"Inbox\"\r",
+											"    pm.expect(inbox, \"Не найдена задача \\\"1. Тестирование авторизации в Selenium'e\\\"\").to.not.be.undefined;\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/tasks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"tasks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Получить задачу по id",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const\r",
+											"    // получаем путь url\r",
+											"    path = pm.request.url.path,\r",
+											"    // получаем id из адреса\r",
+											"    request_task_id = path[path.length - 1],\r",
+											"    // проверяем: если это число - ставим как есть, иначе это переменная окружения - подставляем из значение\r",
+											"    task_id = typeof request_task_id === 'Number' ?\r",
+											"        request_task_id : pm.environment.replaceIn(request_task_id);\r",
+											"\r",
+											"// сохраняем id проекта в запросе\r",
+											"pm.collectionVariables.set('task_id', task_id);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Получение задачи по id\", () => {\r",
+											"    const response = pm.response;\r",
+											"\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(response.code, \"Ошибка выполенния запроса\").to.be.equal(200);\r",
+											"\r",
+											"    // проверяем правильность полученного проекта\r",
+											"    pm.expect(response.json().id, \"Запрос вернул неверную задачу. Не соответствует id\")\r",
+											"        .to.not.equal(pm.collectionVariables.get('task_id'));\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/tasks/{{base_task_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"tasks",
+										"{{base_task_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Создать новую задачу",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// сохраняем последний добавленный id\r",
+											"pm.environment.set('last_task_id', pm.response.json().id);\r",
+											"\r",
+											"// тест\r",
+											"pm.test(\"Создание новой задачи\", () => {\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(200);\r",
+											"\r",
+											"    // проверяем возвращенное значение\r",
+											"    pm.expect(pm.response.json().length, \"Запрос вернул пустой ответ\").to.not.equal(0);\r",
+											"\r",
+											"    const item = pm.response.json();\r",
+											"    // проверяем правильность полученной задачи\r",
+											"    pm.expect(item.content, \"Ошибка при создании задачи. Не соответствует контент\")\r",
+											"        .to.equal(pm.collectionVariables.get('task_content'));\r",
+											"\r",
+											"    pm.expect(item.description, \"Ошибка при создании задачи. Не соответствует описание\")\r",
+											"        .to.equal(pm.collectionVariables.get('task_description'));\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// достаем тело запроса\r",
+											"const body = JSON.parse(pm.request.body.raw);\r",
+											"\r",
+											"// записываем в переменную значение поля\r",
+											"pm.collectionVariables.set('task_content', body.content);\r",
+											"pm.collectionVariables.set('task_description', body.description);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"content\": \"Задача тестовая\",\r\n    \"description\": \"Выполнить задачу\",\r\n    \"due_string\": \"tomorrow at 12:00\",\r\n    \"due_lang\": \"ru\",\r\n    \"priority\": 4,\r\n    \"project_id\": 2296796261,\r\n    \"assignee\": 40594969\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/tasks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"tasks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Создать новую задачу в проект Inbox",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// записываем в переменную\r",
+											"pm.environment.set('last_task_inbox_id', pm.response.json().id);\r",
+											"\r",
+											"// тест\r",
+											"pm.test(\"Создание новой задачи\", () => {\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(200);\r",
+											"\r",
+											"    // проверяем возвращенное значение\r",
+											"    pm.expect(pm.response.json().length, \"Запрос вернул пустой ответ\").to.not.equal(0);\r",
+											"\r",
+											"    const item = pm.response.json();\r",
+											"    // проверяем правильность полученной задачи\r",
+											"    pm.expect(item.content, \"Ошибка при создании задачи. Не соответствует контент\")\r",
+											"        .to.equal(pm.collectionVariables.get('task_content'));\r",
+											"\r",
+											"    pm.expect(item.description, \"Ошибка при создании задачи. Не соответствует описание\")\r",
+											"        .to.equal(pm.collectionVariables.get('task_description'));\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// достаем тело запроса\r",
+											"const body = JSON.parse(pm.request.body.raw);\r",
+											"\r",
+											"// записываем в переменную значение поля\r",
+											"pm.collectionVariables.set('task_content', body.content);\r",
+											"pm.collectionVariables.set('task_description', body.description);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"content\": \"Задача тестовая в Inbox\",\r\n    \"description\": \"Выполнить задачу в Inbox\",\r\n    \"due_string\": \"tomorrow at 12:00\",\r\n    \"priority\": 4,\r\n    \"assignee\": 40594969\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/tasks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"tasks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Обновить задачу по id",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const\r",
+											"    // получаем путь url\r",
+											"    path = pm.request.url.path,\r",
+											"    // получаем id из адреса\r",
+											"    request_task_id = path[path.length - 1],\r",
+											"    // проверяем: если это число - ставим как есть, иначе это переменная окружения - подставляем из значение\r",
+											"    task_id = typeof request_task_id === 'Number' ?\r",
+											"        request_task_id : pm.environment.replaceIn(request_task_id);\r",
+											"\r",
+											"// сохраняем id проекта в запросе\r",
+											"pm.collectionVariables.set('task_id', task_id);\r",
+											"\r",
+											"// достаем тело запроса\r",
+											"const body = JSON.parse(pm.request.body.raw);\r",
+											"// записываем в переменную значение поля\r",
+											"pm.collectionVariables.set('task_priority', body.priority);\r",
+											"pm.collectionVariables.set('task_assignee', body.assignee);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Обновление задачи\", () => {\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(204);\r",
+											"\r",
+											"    // выполняем запрос на проверку изменений\r",
+											"    pm.sendRequest({\r",
+											"        url: `${pm.environment.get(\"base_url\")}/tasks/${pm.collectionVariables.get(\"task_id\")}`,\r",
+											"        method: 'GET',\r",
+											"        header: {\r",
+											"            'authorization': pm.request.getHeaders().Authorization\r",
+											"        }\r",
+											"    }, (err, response) => {\r",
+											"        pm.test(\"Проверка обновления проекта\", () => {\r",
+											"            // проверяем установку приоритета          \r",
+											"            pm.expect(response.json().priority, \"Значение не изменилось\")\r",
+											"                .to.eql(pm.collectionVariables.get('task_priority'));\r",
+											"            // проверяем установку исполнителя\r",
+											"            pm.expect(response.json().assignee, \"Значение не изменилось\")\r",
+											"                .to.eql(pm.collectionVariables.get('task_assignee'));\r",
+											"        });\r",
+											"    });\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{        \r\n    \"priority\": 2,\r\n    \"assignee\": 40678597\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/tasks/{{base_task_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"tasks",
+										"{{base_task_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Закрыть задачу по id",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const\r",
+											"    // получаем путь url\r",
+											"    path = pm.request.url.path,\r",
+											"    // получаем id из адреса\r",
+											"    request_task_id = path[1],\r",
+											"    // проверяем: если это число - ставим как есть, иначе это переменная окружения - подставляем из значение\r",
+											"    task_id = typeof request_task_id === 'Number' ?\r",
+											"        request_task_id : pm.environment.replaceIn(request_task_id);\r",
+											"\r",
+											"// сохраняем id проекта в запросе\r",
+											"pm.collectionVariables.set('task_id', task_id);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Закрытие задачи\", () => {\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(204);\r",
+											"\r",
+											"    // выполняем запрос на проверку изменений\r",
+											"    pm.sendRequest({\r",
+											"        url: `${pm.environment.get(\"base_url\")}/tasks/${pm.collectionVariables.get(\"task_id\")}`,\r",
+											"        method: 'GET',\r",
+											"        header: {\r",
+											"            'authorization': pm.request.getHeaders().Authorization\r",
+											"        }\r",
+											"    }, (err, response) => {\r",
+											"        pm.test(\"Проверка закрытия задачи\", () => {\r",
+											"            // проверяем закрытие задачи\r",
+											"            pm.expect(response.json().completed, \"Задача не закрыта\").to.eql(true);\r",
+											"        });\r",
+											"    });\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/tasks/{{base_task_id}}/close",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"tasks",
+										"{{base_task_id}}",
+										"close"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Удалить задачу по id",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const\r",
+											"    // получаем путь url\r",
+											"    path = pm.request.url.path,\r",
+											"    // получаем id из адреса\r",
+											"    request_task_id = path[path.length - 1],\r",
+											"    // проверяем: если это число - ставим как есть, иначе это переменная окружения - подставляем из значение\r",
+											"    task_id = typeof request_task_id === 'Number' ?\r",
+											"        request_task_id : pm.environment.replaceIn(request_task_id);\r",
+											"\r",
+											"// сохраняем id проекта в запросе\r",
+											"pm.collectionVariables.set('task_id', task_id);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Удаление задачи\", () => {\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(204);\r",
+											"\r",
+											"    // выполняем запрос на проверку eудаления\r",
+											"    pm.sendRequest({\r",
+											"        url: `${pm.environment.get(\"base_url\")}/tasks/${pm.collectionVariables.get(\"task_id\")}`,\r",
+											"        method: 'GET',\r",
+											"        header: {\r",
+											"            'authorization': pm.request.getHeaders().Authorization\r",
+											"        }\r",
+											"    }, (err, response) => {\r",
+											"        // проверяем удаление        \r",
+											"        pm.expect(response.code, \"Задача не удалилась\").to.be.equal(404);\r",
+											"    });\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/tasks/{{last_task_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"tasks",
+										"{{last_task_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Удалить задачу в проекте Inbox по id",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const\r",
+											"    // получаем путь url\r",
+											"    path = pm.request.url.path,\r",
+											"    // получаем id из адреса\r",
+											"    request_task_id = path[path.length - 1],\r",
+											"    // проверяем: если это число - ставим как есть, иначе это переменная окружения - подставляем из значение\r",
+											"    task_id = typeof request_task_id === 'Number' ?\r",
+											"        request_task_id : pm.environment.replaceIn(request_task_id);\r",
+											"\r",
+											"// сохраняем id проекта в запросе\r",
+											"pm.collectionVariables.set('task_id', task_id);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Удаление задачи\", () => {\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(204);\r",
+											"\r",
+											"    // выполняем запрос на проверку eудаления\r",
+											"    pm.sendRequest({\r",
+											"        url: `${pm.environment.get(\"base_url\")}/tasks/${pm.collectionVariables.get(\"task_id\")}`,\r",
+											"        method: 'GET',\r",
+											"        header: {\r",
+											"            'authorization': pm.request.getHeaders().Authorization\r",
+											"        }\r",
+											"    }, (err, response) => {\r",
+											"        // проверяем удаление        \r",
+											"        pm.expect(response.code, \"Задача не удалилась\").to.be.equal(404);\r",
+											"    });\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/tasks/{{last_task_inbox_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"tasks",
+										"{{last_task_inbox_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Возобновить задачу по id",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const\r",
+											"    // получаем путь url\r",
+											"    path = pm.request.url.path,\r",
+											"    // получаем id из адреса\r",
+											"    request_task_id = path[1],\r",
+											"    // проверяем: если это число - ставим как есть, иначе это переменная окружения - подставляем из значение\r",
+											"    task_id = typeof request_task_id === 'Number' ?\r",
+											"        request_task_id : pm.environment.replaceIn(request_task_id);\r",
+											"\r",
+											"// сохраняем id проекта в запросе\r",
+											"pm.collectionVariables.set('task_id', task_id);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Возобновление задачи\", () => {\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(204);\r",
+											"\r",
+											"    // выполняем запрос на проверку изменений\r",
+											"    pm.sendRequest({\r",
+											"        url: `${pm.environment.get(\"base_url\")}/tasks/${pm.collectionVariables.get(\"task_id\")}`,\r",
+											"        method: 'GET',\r",
+											"        header: {\r",
+											"            'authorization': pm.request.getHeaders().Authorization\r",
+											"        }\r",
+											"    }, (err, response) => {\r",
+											"        pm.test(\"Проверка возобновления\", () => {\r",
+											"            // проверяем закрытие задачи\r",
+											"            pm.expect(response.json().completed, \"Задача не возобновлена\").to.eql(false);\r",
+											"        });\r",
+											"    });\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/tasks/{{base_task_id}}/reopen",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"tasks",
+										"{{base_task_id}}",
+										"reopen"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Комментарии",
+					"item": [
+						{
+							"name": "Получить все комментарии к проекту по его id",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const\r",
+											"    // получаем project_id из запроса\r",
+											"    request_project_id = pm.request.url.query.get('project_id'),\r",
+											"    // проверяем: если это число - ставим как есть, иначе это переменная окружения - подставляем из значение\r",
+											"    project_id = typeof request_project_id === 'Number' ?\r",
+											"        request_project_id : pm.environment.replaceIn(request_project_id);\r",
+											"\r",
+											"// сохраняем id проекта в запросе\r",
+											"pm.collectionVariables.set('project_id', project_id);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Получение списка комментариев по проекту\", () => {\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(200);\r",
+											"\r",
+											"    // проверяем возвращенное значение\r",
+											"    pm.expect(pm.response.json().length, \"Запрос вернул пустой ответ\").to.not.equal(0);\r",
+											"\r",
+											"    const ids = [];\r",
+											"    // записываем id полученных элементов\r",
+											"    pm.response.json().forEach(item => ids.push(item.id));\r",
+											"    \r",
+											"    // проверяем правильность полученного проекта\r",
+											"    pm.expect(pm.collectionVariables.get('project_id'), \"Запрос вернул комментарии к другому проекту. Не соответствует id\")\r",
+											"        .to.not.equals(ids);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/comments?project_id={{base_project_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"comments"
+									],
+									"query": [
+										{
+											"key": "project_id",
+											"value": "{{base_project_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Получить все комментарии к задаче по ее id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Получение списка комментариев по задаче\", () => {\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(200);\r",
+											"\r",
+											"    // проверяем возвращенное значение\r",
+											"    pm.expect(pm.response.json().length, \"Запрос вернул пустой ответ\").to.not.equal(0);\r",
+											"\r",
+											"    const ids = [];\r",
+											"    // записываем id полученных элементов\r",
+											"    pm.response.json().forEach(item => ids.push(item.id));\r",
+											"    \r",
+											"    // проверяем правильность полученной задачи\r",
+											"    pm.expect(pm.collectionVariables.get('task_id'), \"Запрос вернул комментарии к другой задачи. Не соответствует id\")\r",
+											"        .to.not.equals(ids);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const\r",
+											"    // получаем project_id из запроса\r",
+											"    request_task_id = pm.request.url.query.get('task_id'),\r",
+											"    // проверяем: если это число - ставим как есть, иначе это переменная окружения - подставляем из значение\r",
+											"    task_id = typeof request_task_id === 'Number' ?\r",
+											"        request_task_id : pm.environment.replaceIn(request_task_id);\r",
+											"\r",
+											"// сохраняем id проекта в запросе\r",
+											"pm.collectionVariables.set('task_id', task_id);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/comments?task_id={{base_task_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"comments"
+									],
+									"query": [
+										{
+											"key": "task_id",
+											"value": "{{base_task_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Получить комментарий по id",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const\r",
+											"    // получаем путь url\r",
+											"    path = pm.request.url.path,\r",
+											"    // получаем id из адреса\r",
+											"    request_comment_id = path[path.length - 1],\r",
+											"    // проверяем: если это число - ставим как есть, иначе это переменная окружения - подставляем из значение\r",
+											"    comment_id = typeof request_comment_id === 'Number' ?\r",
+											"        request_comment_id : pm.environment.replaceIn(request_comment_id);\r",
+											"\r",
+											"// сохраняем id проекта в запросе\r",
+											"pm.collectionVariables.set('comment_id', comment_id);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Получение комментария по id\", () => {\r",
+											"    const response = pm.response;\r",
+											"\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(response.code, \"Ошибка выполенния запроса\").to.be.equal(200);\r",
+											"\r",
+											"    // проверяем правильность полученного проекта\r",
+											"    pm.expect(response.json().id, \"Запрос вернул неверную задачу. Не соответствует id\")\r",
+											"        .to.not.equal(pm.collectionVariables.get('comment_id'));\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/comments/{{base_comment_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"comments",
+										"{{base_comment_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Обновить комментарий по id",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const\r",
+											"    // получаем путь url\r",
+											"    path = pm.request.url.path,\r",
+											"    // получаем id из адреса\r",
+											"    request_comment_id = path[path.length - 1],\r",
+											"    // проверяем: если это число - ставим как есть, иначе это переменная окружения - подставляем из значение\r",
+											"    comment_id = typeof request_comment_id === 'Number' ?\r",
+											"        request_comment_id : pm.environment.replaceIn(request_comment_id);\r",
+											"\r",
+											"// сохраняем id проекта в запросе\r",
+											"pm.collectionVariables.set('comment_id', comment_id);\r",
+											"\r",
+											"// достаем тело запроса\r",
+											"const body = JSON.parse(pm.request.body.raw);\r",
+											"// записываем в переменную значение поля\r",
+											"pm.collectionVariables.set('comment_content', body.content);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Обновление комментария\", () => {\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(204);\r",
+											"\r",
+											"    // выполняем запрос на проверку изменений\r",
+											"    pm.sendRequest({\r",
+											"        url: `${pm.environment.get(\"base_url\")}/comments/${pm.collectionVariables.get(\"comment_id\")}`,\r",
+											"        method: 'GET',\r",
+											"        header: {\r",
+											"            'authorization': pm.request.getHeaders().Authorization\r",
+											"        }\r",
+											"    }, (err, response) => {\r",
+											"        pm.test(\"Проверка обновления комментария\", () => {\r",
+											"            // проверяем установку контента\r",
+											"            pm.expect(response.json().content, \"Значение не изменилось\")\r",
+											"                .to.eql(pm.collectionVariables.get('comment_content'));\r",
+											"        });\r",
+											"    });\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"content\": \"исправление комментария\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/comments/{{last_comment_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"comments",
+										"{{last_comment_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Создать новый комментарий к задаче",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// достаем тело запроса\r",
+											"const body = JSON.parse(pm.request.body.raw);\r",
+											"\r",
+											"// записываем в переменную значение поля\r",
+											"pm.collectionVariables.set('comment_content', body.content);\r",
+											"pm.collectionVariables.set('comment_task_id', body.task_id);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// сохраняем последний добавленный id\r",
+											"pm.environment.set('last_comment_id', pm.response.json().id);\r",
+											"\r",
+											"// тест\r",
+											"pm.test(\"Создание нового комментария\", () => {\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(200);\r",
+											"\r",
+											"    // проверяем возвращенное значение\r",
+											"    pm.expect(pm.response.json().length, \"Запрос вернул пустой ответ\").to.not.equal(0);\r",
+											"\r",
+											"    const item = pm.response.json();\r",
+											"    // проверяем правильность полученного проекта\r",
+											"    pm.expect(item.task_id, \"Ошибка при создании комментария. Не соответствует id задачи\")\r",
+											"        .to.equal(pm.collectionVariables.get('comment_task_id'));\r",
+											"\r",
+											"    // проверяем правильность контент комментария\r",
+											"    pm.expect(item.content, \"Ошибка при создании комментария. Не соответствует контент\")\r",
+											"        .to.equal(pm.collectionVariables.get('comment_content'));\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"task_id\": 6097821377,\r\n    \"content\": \"Нужно установить Selenium\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/comments",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"comments"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Создать новый комментарий к проекту",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// достаем тело запроса\r",
+											"const body = JSON.parse(pm.request.body.raw);\r",
+											"\r",
+											"// записываем в переменную значение поля\r",
+											"pm.collectionVariables.set('comment_content', body.content);\r",
+											"pm.collectionVariables.set('comment_project_id', body.project_id);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// сохраняем последний добавленный id\r",
+											"pm.environment.set('last_comment_id', pm.response.json().id);\r",
+											"\r",
+											"// тест\r",
+											"pm.test(\"Создание нового комментария\", () => {\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(200);\r",
+											"\r",
+											"    // проверяем возвращенное значение\r",
+											"    pm.expect(pm.response.json().length, \"Запрос вернул пустой ответ\").to.not.equal(0);\r",
+											"\r",
+											"    const item = pm.response.json();\r",
+											"    // проверяем правильность полученного проекта\r",
+											"    pm.expect(item.project_id, \"Ошибка при создании комментария. Не соответствует id проекту\")\r",
+											"        .to.equal(pm.collectionVariables.get('comment_project_id'));\r",
+											"\r",
+											"    // проверяем правильность контент комментария\r",
+											"    pm.expect(item.content, \"Ошибка при создании комментария. Не соответствует контент\")\r",
+											"        .to.equal(pm.collectionVariables.get('comment_content'));\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"project_id\": 2296796261,\r\n    \"content\": \"Простой тестовый проект\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/comments",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"comments"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Удалить комментарий по id",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const\r",
+											"    // получаем путь url\r",
+											"    path = pm.request.url.path,\r",
+											"    // получаем id из адреса\r",
+											"    request_comment_id = path[path.length - 1],\r",
+											"    // проверяем: если это число - ставим как есть, иначе это переменная окружения - подставляем из значение\r",
+											"    comment_id = typeof request_comment_id === 'Number' ?\r",
+											"        request_comment_id : pm.environment.replaceIn(request_comment_id);\r",
+											"\r",
+											"// сохраняем id проекта в запросе\r",
+											"pm.collectionVariables.set('comment_id', comment_id);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Удаление комментария\", () => {\r",
+											"    // проверяем выполнение запроса\r",
+											"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(204);\r",
+											"\r",
+											"    // выполняем запрос на проверку eудаления\r",
+											"    pm.sendRequest({\r",
+											"        url: `${pm.environment.get(\"base_url\")}/comments/${pm.collectionVariables.get(\"task_id\")}`,\r",
+											"        method: 'GET',\r",
+											"        header: {\r",
+											"            'authorization': pm.request.getHeaders().Authorization\r",
+											"        }\r",
+											"    }, (err, response) => {\r",
+											"        // проверяем удаление        \r",
+											"        pm.expect(response.code, \"Комментарий не удалился\").to.be.equal(404);\r",
+											"    });\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/comments/{{last_comment_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"comments",
+										"{{last_comment_id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Проверка авторизации",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка авторизации\", () => {\r",
+									"    // проверяем выполнение запроса\r",
+									"    pm.expect(pm.response.code, \"Ошибка выполенния запроса\").to.be.equal(200);    \r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/projects",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"projects"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "ef8eaf81b88b28c5eaf8d93d266315b2c61614a1",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "project_id",
+			"value": ""
+		},
+		{
+			"key": "project_name",
+			"value": ""
+		},
+		{
+			"key": "last_project_id",
+			"value": ""
+		},
+		{
+			"key": "project_favorite",
+			"value": ""
+		},
+		{
+			"key": "task_id",
+			"value": ""
+		},
+		{
+			"key": "task_due_lang",
+			"value": ""
+		},
+		{
+			"key": "task_priority",
+			"value": ""
+		},
+		{
+			"key": "task_assignee",
+			"value": ""
+		},
+		{
+			"key": "comment_content",
+			"value": ""
+		},
+		{
+			"key": "comment_task_id",
+			"value": ""
+		},
+		{
+			"key": "comment_id",
+			"value": ""
+		},
+		{
+			"key": "comment_project_id",
+			"value": ""
+		},
+		{
+			"key": "task_content",
+			"value": ""
+		},
+		{
+			"key": "task_description",
+			"value": ""
+		}
+	]
+}
